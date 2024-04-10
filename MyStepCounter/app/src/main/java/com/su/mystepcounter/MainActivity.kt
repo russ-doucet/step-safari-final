@@ -2,21 +2,23 @@ package com.su.mystepcounter
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import android.content.Intent
-import android.view.MenuItem
 import com.su.mystepcounter.databinding.ActivityMainBinding
+
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -47,6 +49,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         //initializing sensorManager instance
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        // Setting up the progress bar to correspond with the user's inputted step goal
+        binding.setGoalButton.setOnClickListener{
+            var stepGoal = binding.inputtedGoal.getText().toString().toInt()
+            binding.progressBar.max = stepGoal
+            binding.progressBar.progress = 0
+            Toast.makeText(this, "Step Goal Successfully Set!", Toast.LENGTH_SHORT).show()
+        }
+
+        // Test button to test that progress bar incrementign is working:
+        binding.incrementTest.setOnClickListener(View.OnClickListener {
+            val progress: Int = binding.progressBar.getProgress()
+            val newProgress = progress + 1
+
+            // Ensure progress doesn't exceed maximum value
+            if (newProgress <= binding.progressBar.getMax()) {
+                binding.progressBar.setProgress(newProgress)
+            }
+        })
+
 
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -86,6 +108,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             return true
         }
         return false
+    }
+
+    // Function for incrementing the progress bar
+    private fun incrementProgress(value: Int){
+        val progress: Int = binding.progressBar.getProgress()
+        val newProgress = progress + value
+
+        // Ensure progress doesn't exceed maximum value
+        if (newProgress <= binding.progressBar.getMax()) {
+            binding.progressBar.setProgress(newProgress)
+        }
+        else{
+            Toast.makeText(this, "You have reached your step goal! Time to set a new One!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onResume() {
@@ -128,6 +164,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             // set current steps in textview
             tv_stepsTaken.text = ("$currentSteps")
+            binding.progressBar.progress = currentSteps
         }
     }
 
